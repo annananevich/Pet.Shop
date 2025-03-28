@@ -1,5 +1,7 @@
 import { Before, After } from "@cucumber/cucumber";
 import { addPet, deletePet } from "../api/petsApi";
+import { deleteUser } from "../api/usersApi";
+import { deleteOrder } from "../api/storeApi";
 import { faker } from "@faker-js/faker";
 import { CustomWorld } from "../support/world";
 
@@ -34,10 +36,29 @@ Before({ tags: "@cleanupPet" }, async function (this: CustomWorld) {
 
 After({ tags: "@cleanupPet" }, async function (this: CustomWorld) {
   console.log("🚀 After hook @cleanupPet executed!");
-  if (this.petIds.length > 0) {
+  if (this.petIds && this.petIds.length > 0) {
     for (const petId of this.petIds) {
       console.log(`Deleting pet with ID: ${petId} (After hook)`);
       await deletePet(petId, "special-key");
     }
+  }
+});
+
+After({ tags: "@cleanupUser" }, async function (this: CustomWorld) {
+  console.log("🚀 After hook @cleanupUser executed!");
+
+  if (this.userData?.username) {
+    console.log(`Deleting user: ${this.userData.username} (After hook)`);
+    await deleteUser(this.userData.username);
+  }
+});
+
+After({ tags: "@cleanupOrder" }, async function (this: CustomWorld) {
+  if (this.orderData?.id) {
+    console.log(`Deleting order with ID: ${this.orderData.id}`);
+    await deleteOrder(this.orderData.id);
+    console.log(`Order with ID: ${this.orderData.id} successfully deleted`);
+  } else {
+    console.log("Order data is not available for deletion.");
   }
 });

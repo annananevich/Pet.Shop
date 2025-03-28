@@ -10,6 +10,12 @@ export const createUser = (userData: object) =>
 export const getUser = (username: string) =>
   request(baseUrl).get(`/user/${username}`).set("Accept", "application/json");
 
+export const updateUser = (username: string, userData: object) =>
+  request(baseUrl)
+    .put(`/user/${username}`)
+    .send(userData)
+    .set("Content-Type", "application/json");
+
 export const deleteUser = (username: string) =>
   request(baseUrl)
     .delete(`/user/${username}`)

@@ -7,7 +7,10 @@ export interface ICustomWorld {
   pet: any;
   petIds: number[];
   pets: any[];
-  response?: any; // <-- Добавили response
+  userData: any;
+  loginResponse: any;
+  orderData?: any;
+  response?: any;
 }
 
 // Реализация класса
@@ -17,7 +20,10 @@ export class CustomWorld extends World implements ICustomWorld {
   pet: any = null;
   petIds: number[] = [];
   pets: any[] = [];
-  response?: any; // <-- Добавили response
+  userData: any = null;
+  loginResponse: any = null;
+  orderData?: any;
+  response?: any;
 
   constructor(options: IWorldOptions) {
     super(options);

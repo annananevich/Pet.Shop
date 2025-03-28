@@ -1,9 +1,10 @@
 import { Given, When, Then } from "@cucumber/cucumber";
 import { expect } from "chai";
-import { addPet, getPet } from "../../api/petsApi";
+import { addPet } from "../../api/petsApi";
 import { faker } from "@faker-js/faker";
 import { setDefaultTimeout } from "@cucumber/cucumber";
 import { setTimeout } from "timers/promises";
+import { retryGetPet } from "../../utils/retryGetPet";
 
 setDefaultTimeout(60000);
 
@@ -51,53 +52,16 @@ Then("The responses should contain the IDs of the new pets", function () {
 
 When("I send requests to retrieve pet information", async function () {
   this.retrievedPets = [];
-  const maxRetries = 5;
-  const retryDelay = 5000; // 5 seconds between retries
-
   console.log("Starting to retrieve pet information...");
 
   for (const petId of this.petIds) {
-    let retryCount = 0;
-    let lastError;
-    let success = false;
-
-    while (retryCount < maxRetries && !success) {
-      try {
-        console.log(
-          `Fetching pet with ID: ${petId} (Attempt ${retryCount + 1})`
-        );
-        const response = await getPet(petId);
-        expect(response.status).to.equal(200);
-
-        this.retrievedPets.push(response.body);
-        console.log("Retrieved pet data:", response.body);
-        success = true;
-      } catch (err) {
-        const error = err as {
-          response?: { status?: number };
-          message?: string;
-        };
-        lastError = error;
-        retryCount++;
-
-        if (retryCount < maxRetries) {
-          console.warn(
-            `Attempt ${retryCount} failed, retrying in ${
-              retryDelay / 1000
-            } seconds...`
-          );
-          await delay(retryDelay);
-        }
-      }
-    }
-
-    if (!success) {
-      throw (
-        lastError ||
-        new Error(
-          `Failed to retrieve pet with ID ${petId} after ${maxRetries} attempts`
-        )
-      );
+    try {
+      const pet = await retryGetPet(petId);
+      this.retrievedPets.push(pet);
+      console.log("Retrieved pet data:", pet);
+    } catch (err) {
+      console.error("Error retrieving pet:", err);
+      throw err;
     }
   }
 });
